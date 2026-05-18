@@ -61,16 +61,42 @@ export function useUpload() {
 
       // Step 3: Upload blob data to Shelby RPC nodes
       setStep(3);
-      toast.info("Step 3: Uploading blob data to Shelby nodes...");
+      toast.info("Step 3: Uploading blob data to Shelby nodes (waiting for indexer sync)...");
       
       const shelbyClient = getShelbyClient();
       if (!shelbyClient) throw new Error("Shelby client not initialized");
 
-      await shelbyClient.rpc.putBlob({
-        account: account.address,
-        blobName: file.name,
-        blobData: new Uint8Array(await file.arrayBuffer()),
-      });
+      // Give the Shelby RPC indexers 3 seconds to sync the on-chain registration event
+      await new Promise(r => setTimeout(r, 3000));
+
+      const blobData = new Uint8Array(await file.arrayBuffer());
+      let uploadSuccess = false;
+      let lastError: any = null;
+
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          if (attempt > 1) {
+            toast.info(`Retrying upload to Shelby nodes (attempt ${attempt}/3)...`);
+          }
+          await shelbyClient.rpc.putBlob({
+            account: account.address,
+            blobName: file.name,
+            blobData,
+          });
+          uploadSuccess = true;
+          break;
+        } catch (e: any) {
+          console.warn(`putBlob attempt ${attempt} failed:`, e);
+          lastError = e;
+          // Wait 3 seconds before retrying to allow indexer to catch up
+          await new Promise(r => setTimeout(r, 3000));
+        }
+      }
+
+      if (!uploadSuccess) {
+        throw lastError || new Error("Failed to upload blob data to Shelby nodes after 3 attempts.");
+      }
+
       toast.success("Step 3: Blob Uploaded to Shelby Nodes ✓");
       
       setStep(4); // complete

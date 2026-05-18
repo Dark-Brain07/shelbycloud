@@ -18,7 +18,9 @@ export function getShelbyClient() {
   if (typeof window === "undefined") return null;
   
   if (!clientInstance) {
-    const apiKey = localStorage.getItem("shelby_api_key") || process.env.NEXT_PUBLIC_SHELBY_API_KEY || "";
+    const envKey = process.env.NEXT_PUBLIC_SHELBY_API_KEY || "";
+    const storedKey = localStorage.getItem("shelby_api_key");
+    const apiKey = (storedKey && storedKey.trim().length > 10 ? storedKey.trim() : envKey) || envKey;
     
     clientInstance = new ShelbyClient({
       network: getShelbyNetwork(),
