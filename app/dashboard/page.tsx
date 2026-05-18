@@ -17,19 +17,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!account) return;
+    const accountAddress = account.address.toString();
     async function fetchBalance() {
       try {
         setIsBalanceLoading(true);
         let bal = 0;
         try {
           bal = await aptosClient.getBalance({
-            accountAddress: account.address.toString(),
+            accountAddress,
             asset: SHELBYUSD_FA_METADATA_ADDRESS
           });
         } catch (e) {
           console.log("FA balance failed, trying coin fallback", e);
           bal = await aptosClient.getAccountCoinAmount({
-            accountAddress: account.address.toString(),
+            accountAddress,
             coinType: "0x249f5c642a63885ff88a5113b3ba0079840af5a1357706f8c7f3bfc5dd12511f::shelby_usd::ShelbyUSD"
           });
         }
