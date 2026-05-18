@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Copy, Code } from "lucide-react";
 import { toast } from "sonner";
-import { getBlobUrl, getShelbyRpcBase } from "@/lib/utils";
+import { getBlobUrl } from "@/lib/utils";
 
 export function DownloadForm() {
   const [address, setAddress] = useState("");
