@@ -1,4 +1,5 @@
-import { ShelbyClient, Network as ShelbyNetwork } from "@shelby-protocol/sdk/browser";
+import { ShelbyClient, ShelbyNetwork } from "@shelby-protocol/sdk/browser";
+import { Network } from "@aptos-labs/ts-sdk";
 
 let clientInstance: ShelbyClient | null = null;
 
@@ -6,10 +7,10 @@ function getShelbyNetwork(): ShelbyNetwork {
   const env = process.env.NEXT_PUBLIC_NETWORK?.toLowerCase();
   switch (env) {
     case "shelbynet":
-      return ShelbyNetwork.SHELBYNET;
+      return Network.SHELBYNET as ShelbyNetwork;
     case "testnet":
     default:
-      return ShelbyNetwork.TESTNET;
+      return Network.TESTNET as ShelbyNetwork;
   }
 }
 
