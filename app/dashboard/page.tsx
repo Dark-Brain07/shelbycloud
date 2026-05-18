@@ -81,15 +81,23 @@ export default function DashboardPage() {
     },
   ];
 
-  const handleCopy = (name: string) => {
+  const handleCopy = (name: string, isWritten: boolean) => {
     if (!account) return;
+    if (!isWritten) {
+      toast.info("⏳ This blob is currently being verified and written on-chain by storage providers. Please wait a minute before downloading!");
+      return;
+    }
     const url = getBlobUrl(account.address.toString(), name);
     navigator.clipboard.writeText(url);
     toast.success("URL copied to clipboard!");
   };
 
-  const handleDownload = (name: string) => {
+  const handleDownload = (name: string, isWritten: boolean) => {
     if (!account) return;
+    if (!isWritten) {
+      toast.info("⏳ This blob is currently being verified and written on-chain by storage providers. Please wait a minute before downloading!");
+      return;
+    }
     const url = getBlobUrl(account.address.toString(), name);
     window.open(url, "_blank");
   };
@@ -176,15 +184,26 @@ export default function DashboardPage() {
                       <FileIcon className="w-5 h-5 text-pink-400" />
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-white truncate">{file.name}</p>
-                      <p className="text-xs text-pink-200/60">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-white truncate">{file.name}</p>
+                        {file.isWritten ? (
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold shrink-0">
+                            ✓ Written
+                          </span>
+                        ) : (
+                          <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold animate-pulse shrink-0">
+                            ⏳ Confirming on Nodes
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-pink-200/60 mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <button onClick={() => handleCopy(file.name)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-white transition-colors" title="Copy URL">
+                    <button onClick={() => handleCopy(file.name, file.isWritten)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-white transition-colors" title="Copy URL">
                       <Copy className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDownload(file.name)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-cyan-400 transition-colors" title="Download">
+                    <button onClick={() => handleDownload(file.name, file.isWritten)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-cyan-400 transition-colors" title="Download">
                       <Download className="w-4 h-4" />
                     </button>
                   </div>

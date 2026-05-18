@@ -11,6 +11,7 @@ export interface BlobMeta {
   size: number;
   uploadedAt: number;
   expiresAt: number;
+  isWritten: boolean;
 }
 
 export function useFiles() {
@@ -36,6 +37,7 @@ export function useFiles() {
         size: b.size || 0,
         uploadedAt: b.creationMicros ? b.creationMicros / 1000 : Date.now(),
         expiresAt: b.expirationMicros ? b.expirationMicros / 1000 : Date.now() + 1000 * 60 * 60 * 24 * 30,
+        isWritten: b.isWritten ?? true,
       }));
 
       setFiles(formatted);
