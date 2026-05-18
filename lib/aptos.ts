@@ -14,7 +14,7 @@ function getNetwork(): Network {
 }
 
 const network = getNetwork();
-const apiKey = process.env.NEXT_PUBLIC_SHELBY_API_KEY || "";
+const apiKey = (typeof window !== "undefined" ? localStorage.getItem("aptos_api_key") : null) || process.env.NEXT_PUBLIC_SHELBY_API_KEY || "";
 
 const aptosConfig = new AptosConfig({ 
   network,

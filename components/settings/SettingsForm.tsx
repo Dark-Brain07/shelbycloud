@@ -18,7 +18,8 @@ export function SettingsForm() {
   const handleSave = () => {
     localStorage.setItem("shelby_api_key", shelbyKey);
     localStorage.setItem("aptos_api_key", aptosKey);
-    toast.success("Settings saved successfully!");
+    toast.success("Settings saved successfully! Reloading...");
+    setTimeout(() => window.location.reload(), 1000);
   };
 
   return (
@@ -69,7 +70,9 @@ export function SettingsForm() {
           </h2>
           <div className="p-4 bg-[#09090B] rounded-xl border border-pink-500/10">
             <p className="text-sm text-pink-200/60 font-semibold">Current Network</p>
-            <p className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">Aptos Testnet</p>
+            <p className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">
+              Aptos {process.env.NEXT_PUBLIC_NETWORK?.toUpperCase() || "TESTNET"}
+            </p>
           </div>
         </div>
 

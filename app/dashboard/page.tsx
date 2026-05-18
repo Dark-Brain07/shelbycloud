@@ -1,13 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Database, HardDrive, Coins, ArrowUpRight } from "lucide-react";
+import { Database, HardDrive, Coins, ArrowUpRight, Download, Copy, FileIcon } from "lucide-react";
 import Link from "next/link";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { useFiles } from "@/hooks/useFiles";
 import { aptosClient } from "@/lib/aptos";
 import { SHELBYUSD_FA_METADATA_ADDRESS } from "@shelby-protocol/sdk/browser";
+import { getBlobUrl } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function DashboardPage() {
   const { account, connected } = useWallet();
@@ -79,6 +81,19 @@ export default function DashboardPage() {
     },
   ];
 
+  const handleCopy = (name: string) => {
+    if (!account) return;
+    const url = getBlobUrl(account.address.toString(), name);
+    navigator.clipboard.writeText(url);
+    toast.success("URL copied to clipboard!");
+  };
+
+  const handleDownload = (name: string) => {
+    if (!account) return;
+    const url = getBlobUrl(account.address.toString(), name);
+    window.open(url, "_blank");
+  };
+
   if (!connected) {
     return (
       <div className="flex flex-col items-center justify-center h-full min-h-[60vh]">
@@ -90,6 +105,8 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  const recentFiles = files.slice(0, 5);
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
@@ -128,17 +145,53 @@ export default function DashboardPage() {
       </div>
 
       <div className="bg-[#18181B]/80 backdrop-blur-xl rounded-2xl border border-pink-500/20 overflow-hidden shadow-[0_0_20px_rgba(236,72,153,0.05)]">
-        <div className="p-6 border-b border-pink-500/20">
+        <div className="p-6 border-b border-pink-500/20 flex items-center justify-between">
           <h2 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">Recent Uploads</h2>
+          {files.length > 5 && (
+            <Link href="/dashboard/files" className="text-sm text-cyan-400 hover:underline font-bold">
+              View all ({files.length})
+            </Link>
+          )}
         </div>
         <div className="p-6">
-          <div className="text-center py-12 text-pink-200/50 font-medium">
-            <Database className="w-8 h-8 mx-auto mb-3 opacity-50 text-pink-400 animate-pulse" />
-            <p>No recent uploads found.</p>
-            <Link href="/dashboard/upload" className="text-cyan-400 hover:underline mt-2 inline-block font-bold">
-              Upload your first file
-            </Link>
-          </div>
+          {isLoading ? (
+            <div className="text-center py-12 text-pink-200/50 font-medium">
+              <Database className="w-8 h-8 mx-auto mb-3 opacity-50 text-pink-400 animate-spin" />
+              <p>Loading recent uploads...</p>
+            </div>
+          ) : recentFiles.length === 0 ? (
+            <div className="text-center py-12 text-pink-200/50 font-medium">
+              <Database className="w-8 h-8 mx-auto mb-3 opacity-50 text-pink-400 animate-pulse" />
+              <p>No recent uploads found.</p>
+              <Link href="/dashboard/upload" className="text-cyan-400 hover:underline mt-2 inline-block font-bold">
+                Upload your first file
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentFiles.map((file, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-[#09090B] rounded-xl border border-pink-500/10 hover:border-cyan-400/30 transition-all">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-lg bg-pink-500/10 flex items-center justify-center shrink-0">
+                      <FileIcon className="w-5 h-5 text-pink-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-white truncate">{file.name}</p>
+                      <p className="text-xs text-pink-200/60">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => handleCopy(file.name)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-white transition-colors" title="Copy URL">
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDownload(file.name)} className="p-2 hover:bg-white/5 rounded-lg text-pink-200/60 hover:text-cyan-400 transition-colors" title="Download">
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
